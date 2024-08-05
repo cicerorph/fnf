@@ -1,0 +1,608 @@
+<html><head>
+  <title>FNF Sprite Viewer</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg-color: #f0f0f0;
+      --text-color: #333;
+      --container-bg: #ffffff;
+      --input-bg: #ffffff;
+      --input-border: #ccc;
+      --btn-bg: #4CAF50;
+      --btn-color: #ffffff;
+      --btn-hover: #45a049;
+      --select-bg: #ffffff;
+      --accent-color: #4CAF50;
+      --modal-bg: rgba(0, 0, 0, 0.5);
+      --card-bg: #ffffff;
+    }
+
+    .dark-theme {
+      --bg-color: #222;
+      --text-color: #f0f0f0;
+      --container-bg: #333;
+      --input-bg: #444;
+      --input-border: #555;
+      --btn-bg: #4CAF50;
+      --btn-color: #ffffff;
+      --btn-hover: #45a049;
+      --select-bg: #444;
+      --accent-color: #6AE06E;
+      --modal-bg: rgba(0, 0, 0, 0.7);
+      --card-bg: #333;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      transition: all 0.3s ease;
+    }
+
+    .container {
+      background-color: var(--container-bg);
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .file-input-container {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .file-input-wrapper {
+      flex: 1;
+      margin: 0 10px;
+    }
+
+    .file-input-wrapper label {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .custom-file-input {
+      position: relative;
+      display: inline-block;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .custom-file-input input[type="file"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .custom-file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 15px;
+      background-color: var(--input-bg);
+      color: var(--text-color);
+      border: 2px dashed var(--input-border);
+      border-radius: 5px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .custom-file-input:hover .custom-file-input-label {
+      border-color: var(--accent-color);
+    }
+
+    #preview {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
+      min-height: 200px;
+    }
+
+    #controls {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    select, .btn {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    select {
+      background-color: var(--select-bg);
+      color: var(--text-color);
+    }
+
+    .btn {
+      background-color: var(--btn-bg);
+      color: var(--btn-color);
+    }
+
+    .btn:hover {
+      background-color: var(--btn-hover);
+    }
+
+    .btn:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #themeToggle {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background-color: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 24px;
+    }
+
+    #speedControl {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    #speedControl label {
+      margin-right: 10px;
+    }
+
+    #speedSlider {
+      width: 200px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: var(--modal-bg);
+      transition: background-color 0.3s ease;
+    }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      margin: 10% auto;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .close {
+      color: var(--text-color);
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: var(--accent-color);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .frame-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .frame-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .frame-item:hover {
+      background-color: var(--accent-color);
+    }
+
+    .frame-item img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 3px;
+    }
+
+    .frame-item span {
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .blurred {
+      filter: blur(5px);
+      transition: filter 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <button id="themeToggle">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 2V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 20V22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M4.93 4.93L6.34 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M17.66 17.66L19.07 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M2 12H4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M20 12H22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M6.34 17.66L4.93 19.07" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M19.07 4.93L17.66 6.34" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </button>
+  <div class="container" id="mainContainer">
+    <h1>FNF Sprite Viewer</h1>
+    <div class="file-input-container">
+      <div class="file-input-wrapper">
+        <label for="pngInput">PNG File:</label>
+        <div class="custom-file-input">
+          <input type="file" id="pngInput" accept=".png">
+          <div class="custom-file-input-label">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Choose PNG</span>
+          </div>
+        </div>
+      </div>
+      <div class="file-input-wrapper">
+        <label for="xmlInput">XML File:</label>
+        <div class="custom-file-input">
+          <input type="file" id="xmlInput" accept=".xml">
+          <div class="custom-file-input-label">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Choose XML</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="preview"></div>
+    <div id="controls">
+      <select id="animationSelect" disabled>
+        <option value="">Select Animation</option>
+      </select>
+      <button id="downloadFrame" class="btn" disabled>Download Frame</button>
+      <button id="downloadGif" class="btn" disabled>Download GIF</button>
+    </div>
+    <div id="speedControl">
+      <label for="speedSlider">Animation Speed:</label>
+      <input type="range" id="speedSlider" min="1" max="100" value="50">
+    </div>
+  </div>
+
+  <div id="frameModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Select a Frame</h2>
+      <div id="frameList" class="frame-list"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/gif.js"></script>
+  <script>
+    const pngInput = document.getElementById('pngInput');
+    const xmlInput = document.getElementById('xmlInput');
+    const preview = document.getElementById('preview');
+    const animationSelect = document.getElementById('animationSelect');
+    const downloadFrameBtn = document.getElementById('downloadFrame');
+    const downloadGifBtn = document.getElementById('downloadGif');
+    const themeToggle = document.getElementById('themeToggle');
+    const speedSlider = document.getElementById('speedSlider');
+    const frameModal = document.getElementById('frameModal');
+    const frameList = document.getElementById('frameList');
+    const closeModal = document.getElementsByClassName('close')[0];
+    const mainContainer = document.getElementById('mainContainer');
+
+    let spriteSheet, spriteData;
+    let animationInterval;
+    let animationSpeed = 50; // Default speed
+    let currentFrames = [];
+
+    pngInput.addEventListener('change', handlePngUpload);
+    xmlInput.addEventListener('change', handleXmlUpload);
+
+    function handlePngUpload(e) {
+      const file = e.target.files[0];
+      if (file && file.type === 'image/png') {
+        loadSpriteSheet(file);
+        updateFileInputLabel(pngInput, file.name);
+      } else {
+        alert('Please upload a valid PNG file.');
+      }
+    }
+
+    function handleXmlUpload(e) {
+      const file = e.target.files[0];
+      if (file && file.type === 'text/xml') {
+        loadSpriteData(file);
+        updateFileInputLabel(xmlInput, file.name);
+      } else {
+        alert('Please upload a valid XML file.');
+      }
+    }
+
+    function updateFileInputLabel(input, fileName) {
+      const label = input.nextElementSibling.querySelector('span');
+      label.textContent = fileName;
+    }
+
+    function loadSpriteSheet(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        spriteSheet = new Image();
+        spriteSheet.src = e.target.result;
+        spriteSheet.onload = () => {
+          if (spriteData) renderAnimations();
+        };
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function loadSpriteData(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const parser = new DOMParser();
+        spriteData = parser.parseFromString(e.target.result, 'text/xml');
+        if (spriteSheet) renderAnimations();
+      };
+      reader.readAsText(file);
+    }
+
+    function renderAnimations() {
+      const animations = getUniqueAnimations();
+      animationSelect.innerHTML = '<option value="">Select Animation</option>';
+      animations.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        animationSelect.appendChild(option);
+      });
+      animationSelect.disabled = false;
+      downloadFrameBtn.disabled = false;
+      downloadGifBtn.disabled = false;
+    }
+
+    function getUniqueAnimations() {
+      const subTextures = spriteData.getElementsByTagName('SubTexture');
+      const animationSet = new Set();
+      for (const subTexture of subTextures) {
+        const name = subTexture.getAttribute('name');
+        const animationName = name.split('0')[0].trim();
+        animationSet.add(animationName);
+      }
+      return Array.from(animationSet);
+    }
+
+    animationSelect.addEventListener('change', () => {
+      const selectedAnimation = animationSelect.value;
+      if (selectedAnimation) {
+        currentFrames = getAnimationFrames(selectedAnimation);
+        displayAnimation(currentFrames);
+      } else {
+        preview.innerHTML = '';
+        if (animationInterval) {
+          clearInterval(animationInterval);
+        }
+        currentFrames = [];
+      }
+    });
+
+    function getAnimationFrames(animationName) {
+      const subTextures = spriteData.getElementsByTagName('SubTexture');
+      return Array.from(subTextures)
+        .filter(subTexture => subTexture.getAttribute('name').startsWith(animationName))
+        .map(subTexture => ({
+          x: parseInt(subTexture.getAttribute('x')),
+          y: parseInt(subTexture.getAttribute('y')),
+          width: parseInt(subTexture.getAttribute('width')),
+          height: parseInt(subTexture.getAttribute('height')),
+          frameX: parseInt(subTexture.getAttribute('frameX') || '0'),
+          frameY: parseInt(subTexture.getAttribute('frameY') || '0'),
+          frameWidth: parseInt(subTexture.getAttribute('frameWidth') || subTexture.getAttribute('width')),
+          frameHeight: parseInt(subTexture.getAttribute('frameHeight') || subTexture.getAttribute('height'))
+        }));
+    }
+
+    function displayAnimation(frames) {
+      preview.innerHTML = '';
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = Math.max(...frames.map(f => f.frameWidth));
+      canvas.height = Math.max(...frames.map(f => f.frameHeight));
+      
+      let frameIndex = 0;
+      if (animationInterval) {
+        clearInterval(animationInterval);
+      }
+      
+      function animate() {
+        const frame = frames[frameIndex];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(
+          spriteSheet,
+          frame.x, frame.y, frame.width, frame.height,
+          -frame.frameX, -frame.frameY, frame.width, frame.height
+        );
+        frameIndex = (frameIndex + 1) % frames.length;
+      }
+      
+      function updateAnimation() {
+        animate();
+        const interval = Math.max(20, 200 - animationSpeed * 1.8); // Adjust speed range
+        animationInterval = setTimeout(updateAnimation, interval);
+      }
+
+      updateAnimation();
+      preview.appendChild(canvas);
+    }
+
+    downloadFrameBtn.addEventListener('click', () => {
+      const selectedAnimation = animationSelect.value;
+      if (selectedAnimation && currentFrames.length > 0) {
+        showFrameModal();
+      }
+    });
+
+    function showFrameModal() {
+      frameList.innerHTML = '';
+      currentFrames.forEach((frame, index) => {
+        const frameItem = document.createElement('div');
+        frameItem.classList.add('frame-item');
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = frame.frameWidth;
+        canvas.height = frame.frameHeight;
+        ctx.drawImage(
+          spriteSheet,
+          frame.x, frame.y, frame.width, frame.height,
+          -frame.frameX, -frame.frameY, frame.width, frame.height
+        );
+        
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        frameItem.appendChild(img);
+        
+        const span = document.createElement('span');
+        span.textContent = `Frame ${index + 1}`;
+        frameItem.appendChild(span);
+        
+        frameItem.addEventListener('click', () => downloadFrame(index));
+        
+        frameList.appendChild(frameItem);
+      });
+      
+      frameModal.style.display = 'block';
+      mainContainer.classList.add('blurred');
+    }
+
+    function downloadFrame(frameIndex) {
+      const selectedAnimation = animationSelect.value;
+      const frame = currentFrames[frameIndex];
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = frame.frameWidth;
+      canvas.height = frame.frameHeight;
+      ctx.drawImage(
+        spriteSheet,
+        frame.x, frame.y, frame.width, frame.height,
+        -frame.frameX, -frame.frameY, frame.width, frame.height
+      );
+      
+      const link = document.createElement('a');
+      link.download = `${selectedAnimation}_frame_${frameIndex + 1}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      
+      closeFrameModal();
+    }
+
+    closeModal.onclick = closeFrameModal;
+    window.onclick = (event) => {
+      if (event.target == frameModal) {
+        closeFrameModal();
+      }
+    };
+
+    function closeFrameModal() {
+      frameModal.style.display = 'none';
+      mainContainer.classList.remove('blurred');
+    }
+
+    downloadGifBtn.addEventListener('click', () => {
+      const selectedAnimation = animationSelect.value;
+      if (selectedAnimation && currentFrames.length > 0) {
+        const gif = new GIF({
+          workers: 2,
+          workerScript: "assets/js/gif.worker.js",
+          quality: 10,
+          width: Math.max(...currentFrames.map(f => f.frameWidth)),
+          height: Math.max(...currentFrames.map(f => f.frameHeight))
+        });
+
+        currentFrames.forEach(frame => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          canvas.width = frame.frameWidth;
+          canvas.height = frame.frameHeight;
+          ctx.drawImage(
+            spriteSheet,
+            frame.x, frame.y, frame.width, frame.height,
+            -frame.frameX, -frame.frameY, frame.width, frame.height
+          );
+          gif.addFrame(ctx, {delay: Math.max(20, 200 - animationSpeed * 1.8)}); // Adjust GIF speed
+        });
+
+        gif.on('finished', blob => {
+          const link = document.createElement('a');
+          link.download = `${selectedAnimation}.gif`;
+          link.href = URL.createObjectURL(blob);
+          link.click();
+        });
+
+        gif.render();
+      }
+    });
+
+    // Theme toggle functionality
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('dark-theme');
+    });
+
+    // Speed control functionality
+    speedSlider.addEventListener('input', () => {
+      animationSpeed = parseInt(speedSlider.value);
+      if (animationSelect.value) {
+        displayAnimation(currentFrames);
+      }
+    });
+  </script>
+</body>
+</html>
