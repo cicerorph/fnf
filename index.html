@@ -564,14 +564,16 @@
           workerScript: "assets/js/gif.worker.js",
           quality: 10,
           width: Math.max(...currentFrames.map(f => f.frameWidth)),
-          height: Math.max(...currentFrames.map(f => f.frameHeight))
+          height: Math.max(...currentFrames.map(f => f.frameHeight)),
+          transparent: 'rgba(0, 0, 0, 0)' // Set transparency
         });
-
+    
         currentFrames.forEach(frame => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           canvas.width = frame.frameWidth;
           canvas.height = frame.frameHeight;
+          ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear with transparency
           ctx.drawImage(
             spriteSheet,
             frame.x, frame.y, frame.width, frame.height,
@@ -579,28 +581,15 @@
           );
           gif.addFrame(ctx, {delay: Math.max(20, 200 - animationSpeed * 1.8)}); // Adjust GIF speed
         });
-
+    
         gif.on('finished', blob => {
           const link = document.createElement('a');
           link.download = `${selectedAnimation}.gif`;
           link.href = URL.createObjectURL(blob);
           link.click();
         });
-
+    
         gif.render();
-      }
-    });
-
-    // Theme toggle functionality
-    themeToggle.addEventListener('click', () => {
-      document.body.classList.toggle('dark-theme');
-    });
-
-    // Speed control functionality
-    speedSlider.addEventListener('input', () => {
-      animationSpeed = parseInt(speedSlider.value);
-      if (animationSelect.value) {
-        displayAnimation(currentFrames);
       }
     });
   </script>
